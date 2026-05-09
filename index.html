@@ -479,7 +479,7 @@
         <p>جاري تحميل الامتحانات...</p>
       </div>
       <div id="home-content" class="hidden">
-        <h2 class="page-title">Welcome to the Exams Web <span>👋</span></h2>
+        <h2 class="page-title">مرحباً يا ليدر الدفعة <span>👋</span></h2>
         <div id="quizzes-list"></div>
       </div>
     </div>
@@ -568,7 +568,7 @@
   <!-- MODAL: Add Question -->
   <div id="question-modal" class="modal-overlay hidden">
     <div class="modal">
-      <h3>إضافة سؤال جديد</h3>
+      <h3 id="question-modal-title">إضافة سؤال جديد</h3>
 
       <div class="form-group">
         <label>نوع السؤال</label>
@@ -636,7 +636,7 @@
 
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('question-modal')">إلغاء</button>
-        <button class="btn btn-primary" onclick="saveQuestion()">إضافة السؤال</button>
+        <button class="btn btn-primary" id="save-question-btn" onclick="saveQuestion()">إضافة السؤال</button>
       </div>
     </div>
   </div>
@@ -1006,6 +1006,9 @@
               <p style="font-weight:600">${i + 1}. ${q.question.substring(0, 80)}${q.question.length > 80 ? '...' : ''}</p>
               <p style="color:var(--text-dim);font-size:0.85rem;margin-top:4px">${q.type === 'mcq' ? 'اختياري' : q.type === 'tf' ? 'صح/خطأ' : 'مقالي'}</p>
             </div>
+            <button class="btn btn-blue" onclick="openEditQuestionModal(${id}, ${i})" style="margin-left:8px">
+              <i class="fas fa-edit"></i>
+            </button>
             <button class="btn btn-danger" onclick="deleteQuestion(${id}, ${i})">
               <i class="fas fa-trash"></i>
             </button>
@@ -1021,7 +1024,34 @@
       container.innerHTML = html;
     }
 
+    let editingQuestionIndex = null;
+
+    function openEditQuestionModal(quizId, qIndex) {
+      addingQuestionToQuizId = quizId;
+      editingQuestionIndex = qIndex;
+      const quiz = quizzes.find(q => q.id === quizId);
+      const q = quiz.questions[qIndex];
+      document.getElementById('q-type').value = q.type;
+      document.getElementById('q-text').value = q.question;
+      document.getElementById('q-explanation').value = q.explanation || '';
+      if (q.type === 'mcq') {
+        q.options.forEach((opt, i) => document.getElementById(`opt-${i}`).value = opt);
+        document.getElementById('correct-mcq').value = q.correct;
+      } else if (q.type === 'tf') {
+        document.getElementById('correct-tf').value = q.correct;
+      } else {
+        document.getElementById('keywords').value = (q.keywords || []).join(', ');
+      }
+      updateQuestionForm();
+      document.getElementById('question-modal-title').textContent = 'تعديل السؤال';
+      document.getElementById('save-question-btn').textContent = 'حفظ التعديل';
+      document.getElementById('question-modal').classList.remove('hidden');
+    }
+
     function openAddQuestionModal() {
+      editingQuestionIndex = null;
+      document.getElementById('question-modal-title').textContent = 'إضافة سؤال جديد';
+      document.getElementById('save-question-btn').textContent = 'إضافة السؤال';
       document.getElementById('q-type').value = 'mcq';
       document.getElementById('q-text').value = '';
       ['opt-0','opt-1','opt-2','opt-3'].forEach(id => document.getElementById(id).value = '');
@@ -1062,15 +1092,23 @@
 
       const quiz = quizzes.find(q => q.id === addingQuestionToQuizId);
       quiz.questions = quiz.questions || [];
-      quiz.questions.push(q);
+
+      let oldQ = null;
+      if (editingQuestionIndex !== null) {
+        oldQ = quiz.questions[editingQuestionIndex];
+        quiz.questions[editingQuestionIndex] = { ...oldQ, ...q };
+      } else {
+        quiz.questions.push(q);
+      }
 
       try {
         await updateQuiz(quiz.id, { questions: quiz.questions });
-        toast('تم إضافة السؤال ✅');
+        toast(editingQuestionIndex !== null ? 'تم تعديل السؤال ✅' : 'تم إضافة السؤال ✅');
         closeModal('question-modal');
         openEditQuiz(quiz.id);
       } catch {
-        quiz.questions.pop();
+        if (editingQuestionIndex !== null) quiz.questions[editingQuestionIndex] = oldQ;
+        else quiz.questions.pop();
         toast('خطأ في الحفظ!', 'error');
       }
     }
@@ -1109,8 +1147,11 @@
     // ====================== START ======================
     loadQuizzes();
   </script>
-  <footer style="text-align:center; padding: 2rem; color: #7a7a9a; font-family: 'Cairo', sans-serif; font-size: 0.9rem; border-top: 1px solid #2a2a3a; margin-top: 3rem;">
-  BY : STAR BOY ⭐
-</footer>
+
+  <footer style="text-align:center; padding: 2rem; color: #7a7a9a; font-family: 'Cairo', sans-serif; border-top: 1px solid #2a2a3a; margin-top: 3rem;">
+    <div style="font-size: 0.9rem;">⭐BY : STAR BOY</div>
+    <div style="font-size: 0.8rem; margin-top: 6px;">الفرقة الثالثة — قسم نظم ومعلومات</div>
+  </footer>
+
 </body>
 </html>
