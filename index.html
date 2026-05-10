@@ -916,6 +916,113 @@
 
     .hidden { display: none !important; }
 
+    /* ─── CUSTOM CONFIRM DIALOG ─── */
+    #confirm-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    #confirm-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.2rem 2rem 1.8rem;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transform: scale(0.88) translateY(16px);
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+      position: relative;
+    }
+
+    #confirm-overlay.open #confirm-box {
+      transform: scale(1) translateY(0);
+    }
+
+    .confirm-icon-wrap {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.3rem;
+      font-size: 1.8rem;
+    }
+
+    .confirm-icon-wrap.danger {
+      background: rgba(255,82,82,0.12);
+      border: 1px solid rgba(255,82,82,0.2);
+      color: var(--red);
+    }
+
+    .confirm-icon-wrap.warning {
+      background: rgba(255,171,64,0.12);
+      border: 1px solid rgba(255,171,64,0.2);
+      color: var(--amber);
+    }
+
+    #confirm-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    #confirm-msg {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 1.8rem;
+    }
+
+    .confirm-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .confirm-btns button {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .confirm-cancel-btn {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border-color: var(--border) !important;
+    }
+    .confirm-cancel-btn:hover { background: var(--surface3); color: var(--text); }
+
+    .confirm-ok-btn.danger {
+      background: var(--red);
+      color: #fff;
+    }
+    .confirm-ok-btn.danger:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,82,82,0.3); }
+
+    .confirm-ok-btn.warning {
+      background: var(--amber);
+      color: #000;
+    }
+    .confirm-ok-btn.warning:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
     /* ─── EMPTY STATE ─── */
     .empty {
       text-align: center;
@@ -1244,6 +1351,21 @@
     </div>
   </div>
 
+  <!-- CUSTOM CONFIRM DIALOG -->
+  <div id="confirm-overlay">
+    <div id="confirm-box">
+      <div class="confirm-icon-wrap danger" id="confirm-icon">
+        <i class="fas fa-trash-alt" id="confirm-icon-i"></i>
+      </div>
+      <div id="confirm-title">هل أنت متأكد؟</div>
+      <div id="confirm-msg"></div>
+      <div class="confirm-btns">
+        <button class="confirm-cancel-btn" onclick="confirmResolve(false)">إلغاء</button>
+        <button class="confirm-ok-btn danger" id="confirm-ok-btn" onclick="confirmResolve(true)">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <div style="font-size:0.9rem;font-weight:700">BY : STAR BOY ⭐</div>
     <div style="font-size:0.8rem;margin-top:6px">الفرقة الثالثة — قسم نظم ومعلومات</div>
@@ -1291,7 +1413,34 @@
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.setAttribute('data-theme', savedTheme);
 
-    // ====================== TOAST ======================
+    // ====================== CUSTOM CONFIRM ======================
+    let _confirmResolve = null;
+
+    function showConfirm({ title, msg, type = 'danger', icon = 'fa-trash-alt', okText = 'تأكيد' }) {
+      return new Promise(resolve => {
+        _confirmResolve = resolve;
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-msg').textContent = msg;
+        document.getElementById('confirm-icon-i').className = `fas ${icon}`;
+        document.getElementById('confirm-icon').className = `confirm-icon-wrap ${type}`;
+        const okBtn = document.getElementById('confirm-ok-btn');
+        okBtn.textContent = okText;
+        okBtn.className = `confirm-ok-btn ${type}`;
+        document.getElementById('confirm-overlay').classList.add('open');
+      });
+    }
+
+    function confirmResolve(val) {
+      document.getElementById('confirm-overlay').classList.remove('open');
+      if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
+    }
+
+    // Close on overlay click
+    document.getElementById('confirm-overlay').addEventListener('click', function(e) {
+      if (e.target === this) confirmResolve(false);
+    });
+
+
     function toast(msg, type = 'success') {
       const el = document.getElementById('toast');
       el.textContent = msg;
@@ -1559,8 +1708,15 @@
       else showCurrentQuestion();
     }
 
-    function exitQuiz() {
-      if (confirm('هل تريد الخروج من الامتحان؟')) showHome();
+    async function exitQuiz() {
+      const ok = await showConfirm({
+        title: 'خروج من الامتحان',
+        msg: 'لو خرجت دلوقتي هتخسر تقدمك في الامتحان، هل أنت متأكد؟',
+        type: 'warning',
+        icon: 'fa-door-open',
+        okText: 'نعم، اخرج'
+      });
+      if (ok) showHome();
     }
 
     // ====================== RESULTS ======================
@@ -1757,7 +1913,14 @@
     async function deleteSelectedQuizzes() {
       const count = selectedQuizIds.size;
       if (count === 0) return;
-      if (!confirm(`هل تريد حذف ${count} امتحان${count > 1 ? 'ات' : ''} نهائياً؟`)) return;
+      const ok = await showConfirm({
+        title: `حذف ${count} امتحان${count > 1 ? 'ات' : ''}`,
+        msg: `هيتم حذف ${count} امتحان${count > 1 ? 'ات' : ''} نهائياً ومش هينفع ترجعهم تاني. هل أنت متأكد؟`,
+        type: 'danger',
+        icon: 'fa-trash-alt',
+        okText: 'نعم، احذف'
+      });
+      if (!ok) return;
 
       const ids = [...selectedQuizIds];
       try {
@@ -1827,7 +1990,15 @@
     }
 
     async function confirmDeleteQuiz(id) {
-      if (!confirm('حذف هذا الامتحان نهائياً؟')) return;
+      const quiz = quizzes.find(q => q.id === id);
+      const ok = await showConfirm({
+        title: 'حذف الامتحان',
+        msg: `هيتم حذف "${quiz ? quiz.title : 'الامتحان'}" نهائياً مع كل أسئلته. مش هينفع ترجعه تاني!`,
+        type: 'danger',
+        icon: 'fa-trash-alt',
+        okText: 'نعم، احذف'
+      });
+      if (!ok) return;
       try {
         await deleteQuizFromDB(id);
         quizzes = quizzes.filter(q => q.id !== id);
@@ -1980,7 +2151,14 @@
     }
 
     async function deleteQuestion(quizId, index) {
-      if (!confirm('حذف هذا السؤال؟')) return;
+      const ok = await showConfirm({
+        title: 'حذف السؤال',
+        msg: 'هيتم حذف السؤال ده نهائياً من الامتحان. هل أنت متأكد؟',
+        type: 'danger',
+        icon: 'fa-minus-circle',
+        okText: 'نعم، احذف'
+      });
+      if (!ok) return;
       const quiz = quizzes.find(q => q.id === quizId);
       const removed = quiz.questions.splice(index, 1);
       try {
