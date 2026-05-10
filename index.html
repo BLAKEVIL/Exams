@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>امتحانات الدفعة - كلية نظم ومعلومات</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
@@ -12,16 +12,46 @@
       --bg: #0a0a0f;
       --surface: #12121a;
       --surface2: #1a1a26;
-      --border: #2a2a3a;
+      --surface3: #22223a;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(0,230,118,0.4);
       --green: #00e676;
       --green-dim: #00c853;
+      --green-glow: rgba(0,230,118,0.15);
       --red: #ff5252;
       --amber: #ffab40;
       --text: #e8e8f0;
       --text-dim: #7a7a9a;
+      --text-muted: #4a4a6a;
+      --nav-h: 64px;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-green: 0 0 40px rgba(0,230,118,0.12);
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f2f7;
+      --surface: #ffffff;
+      --surface2: #f5f6fa;
+      --surface3: #eaecf4;
+      --border: rgba(0,0,0,0.08);
+      --border-hover: rgba(0,180,80,0.4);
+      --green: #00a651;
+      --green-dim: #008f45;
+      --green-glow: rgba(0,166,81,0.12);
+      --red: #e53935;
+      --amber: #f57c00;
+      --text: #1a1a2e;
+      --text-dim: #555577;
+      --text-muted: #9999bb;
+      --shadow: 0 8px 32px rgba(0,0,0,0.1);
+      --shadow-green: 0 0 40px rgba(0,166,81,0.1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Cairo', sans-serif;
@@ -29,121 +59,275 @@
       color: var(--text);
       min-height: 100vh;
       direction: rtl;
+      transition: background 0.35s ease, color 0.35s ease;
+      overflow-x: hidden;
     }
 
-    /* ===== NAVBAR ===== */
+    /* ─── ANIMATED BG GRID ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,230,118,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,230,118,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 1;
+      transition: opacity 0.35s;
+    }
+
+    [data-theme="light"] body::before {
+      background-image:
+        linear-gradient(rgba(0,166,81,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,166,81,0.04) 1px, transparent 1px);
+    }
+
+    /* ─── NAVBAR ─── */
     nav {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
-      height: 64px;
+      height: var(--nav-h);
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 0.35s, border-color 0.35s;
     }
 
     .nav-brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 900;
+      cursor: pointer;
+      user-select: none;
     }
 
-    .nav-brand i { color: var(--green); font-size: 1.5rem; }
-
-    .nav-actions { display: flex; gap: 10px; }
-
-    .btn {
-      padding: 8px 20px;
+    .nav-brand .logo-icon {
+      width: 38px; height: 38px;
       border-radius: 10px;
-      border: none;
+      background: linear-gradient(135deg, var(--green), var(--green-dim));
+      display: flex; align-items: center; justify-content: center;
+      color: #000;
+      font-size: 1rem;
+      box-shadow: 0 4px 16px var(--green-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .nav-brand:hover .logo-icon {
+      transform: rotate(-8deg) scale(1.05);
+    }
+
+    .nav-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ─── THEME TOGGLE ─── */
+    .theme-toggle {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-glow);
+    }
+
+    .theme-toggle .icon-sun,
+    .theme-toggle .icon-moon {
+      position: absolute;
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    }
+
+    [data-theme="light"] .theme-toggle .icon-moon { transform: translateY(30px) rotate(90deg); opacity: 0; }
+    [data-theme="light"] .theme-toggle .icon-sun  { transform: translateY(0) rotate(0); opacity: 1; }
+    [data-theme="dark"]  .theme-toggle .icon-sun  { transform: translateY(-30px) rotate(-90deg); opacity: 0; }
+    [data-theme="dark"]  .theme-toggle .icon-moon { transform: translateY(0) rotate(0); opacity: 1; }
+
+    /* ─── BTNS ─── */
+    .btn {
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
       cursor: pointer;
       font-family: 'Cairo', sans-serif;
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 0.9rem;
       transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
     }
 
     .btn-ghost {
-      background: transparent;
+      background: var(--surface2);
       color: var(--text-dim);
+      border-color: var(--border);
     }
-    .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+    .btn-ghost:hover { background: var(--surface3); color: var(--text); border-color: var(--border-hover); }
 
     .btn-primary {
       background: var(--green);
       color: #000;
+      font-weight: 900;
     }
-    .btn-primary:hover { background: var(--green-dim); transform: translateY(-1px); }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--green-glow); }
+    .btn-primary:active { transform: translateY(0); }
 
     .btn-danger {
-      background: var(--red);
-      color: #fff;
+      background: rgba(255,82,82,0.1);
+      color: var(--red);
+      border-color: rgba(255,82,82,0.2);
     }
-    .btn-danger:hover { opacity: 0.85; }
+    .btn-danger:hover { background: rgba(255,82,82,0.2); border-color: var(--red); }
 
     .btn-blue {
-      background: #2979ff;
-      color: #fff;
+      background: rgba(41,121,255,0.1);
+      color: #6aa6ff;
+      border-color: rgba(41,121,255,0.2);
     }
-    .btn-blue:hover { background: #2962ff; }
+    .btn-blue:hover { background: rgba(41,121,255,0.2); border-color: #2979ff; }
 
-    /* ===== MAIN ===== */
-    #main { max-width: 860px; margin: 0 auto; padding: 2rem 1rem; }
+    /* ─── MAIN ─── */
+    #main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
 
-    /* ===== HOME PAGE ===== */
+    /* ─── FADE IN ANIMATION ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .animate-up  { animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+    .animate-in  { animation: fadeIn 0.35s ease both; }
+    .animate-scale { animation: scaleIn 0.35s cubic-bezier(0.22,1,0.36,1) both; }
+
+    /* ─── HOME PAGE ─── */
     .page-title {
       text-align: center;
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: 900;
-      margin-bottom: 2rem;
+      margin-bottom: 0.4rem;
+      animation: fadeUp 0.5s ease both;
     }
 
     .page-title span { color: var(--green); }
 
+    .page-sub {
+      text-align: center;
+      color: var(--text-dim);
+      margin-bottom: 2.5rem;
+      font-size: 1rem;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
     #quizzes-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1.2rem;
     }
 
     .quiz-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius);
       padding: 1.8rem;
       cursor: pointer;
-      transition: all 0.25s;
+      transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .quiz-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--green-glow), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
     .quiz-card:hover {
       border-color: var(--green);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(0,230,118,0.1);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow), var(--shadow-green);
     }
 
-    .quiz-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
-    .quiz-card p { color: var(--text-dim); font-size: 0.9rem; }
+    .quiz-card:hover::before { opacity: 1; }
+
+    .quiz-card .q-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: var(--green-glow);
+      border: 1px solid rgba(0,230,118,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green);
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+      transition: transform 0.3s;
+    }
+
+    .quiz-card:hover .q-icon { transform: scale(1.1) rotate(-5deg); }
+
+    .quiz-card h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .quiz-card p { color: var(--text-dim); font-size: 0.88rem; }
 
     .quiz-card .arrow {
-      margin-top: 1.2rem;
+      margin-top: 1.4rem;
       color: var(--green);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+      transition: gap 0.2s;
     }
 
-    /* ===== LOADING ===== */
+    .quiz-card:hover .arrow { gap: 10px; }
+
+    /* ─── LOADING ─── */
     .loading {
       text-align: center;
-      padding: 4rem;
+      padding: 5rem;
       color: var(--text-dim);
     }
 
     .spinner {
-      width: 40px; height: 40px;
+      width: 44px; height: 44px;
       border: 3px solid var(--border);
       border-top-color: var(--green);
       border-radius: 50%;
@@ -153,22 +337,45 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ===== QUIZ PAGE ===== */
+    /* ─── QUIZ PAGE ─── */
     .quiz-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      animation: fadeUp 0.4s ease both;
     }
 
-    .quiz-header-title { font-size: 1.1rem; font-weight: 700; color: var(--green); }
+    .quiz-header-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .progress-bar-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      height: 6px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      animation: fadeIn 0.4s ease both;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-dim), var(--green));
+      border-radius: 100px;
+      transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+    }
 
     .progress-pill {
       background: var(--surface2);
       border: 1px solid var(--border);
-      padding: 6px 16px;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 700;
     }
 
     .question-card {
@@ -176,84 +383,107 @@
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 2.5rem;
+      animation: scaleIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+      box-shadow: var(--shadow);
     }
 
     .question-num {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       color: var(--green);
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 0.8rem;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
     .question-text {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      line-height: 1.7;
+      line-height: 1.75;
       margin-bottom: 2rem;
     }
 
-    .options-grid { display: flex; flex-direction: column; gap: 12px; }
+    .options-grid { display: flex; flex-direction: column; gap: 10px; }
 
     .option {
       background: var(--surface2);
-      border: 2px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: 12px;
       padding: 1rem 1.4rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 1rem;
+      font-size: 0.97rem;
       font-weight: 600;
+      animation: fadeUp 0.35s ease both;
     }
 
-    .option:hover { border-color: var(--green); background: rgba(0,230,118,0.05); }
+    .option:nth-child(1) { animation-delay: 0.05s; }
+    .option:nth-child(2) { animation-delay: 0.1s; }
+    .option:nth-child(3) { animation-delay: 0.15s; }
+    .option:nth-child(4) { animation-delay: 0.2s; }
 
-    .option.selected { border-color: var(--green); background: rgba(0,230,118,0.1); }
+    .option:hover {
+      border-color: var(--green);
+      background: var(--green-glow);
+      transform: translateX(-4px);
+    }
 
-    .option.correct { border-color: var(--green) !important; background: rgba(0,230,118,0.15) !important; }
-    .option.wrong { border-color: var(--red) !important; background: rgba(255,82,82,0.15) !important; }
+    .option.selected {
+      border-color: var(--green);
+      background: var(--green-glow);
+    }
+
+    .option.correct {
+      border-color: var(--green) !important;
+      background: rgba(0,230,118,0.12) !important;
+    }
+
+    .option.wrong {
+      border-color: var(--red) !important;
+      background: rgba(255,82,82,0.12) !important;
+    }
 
     .option-letter {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      background: var(--border);
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: var(--surface3);
       display: flex; align-items: center; justify-content: center;
       font-weight: 900;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       flex-shrink: 0;
+      transition: all 0.2s;
     }
 
     .selected .option-letter { background: var(--green); color: #000; }
-    .correct .option-letter { background: var(--green); color: #000; }
-    .wrong .option-letter { background: var(--red); color: #fff; }
+    .correct .option-letter  { background: var(--green); color: #000; }
+    .wrong .option-letter    { background: var(--red); color: #fff; }
 
     .tf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
     .tf-option {
       background: var(--surface2);
-      border: 2px solid var(--border);
-      border-radius: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
       padding: 2rem;
       text-align: center;
       font-size: 1.4rem;
       font-weight: 900;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
     }
 
-    .tf-option:hover { border-color: var(--green); }
-    .tf-option.selected { border-color: var(--green); background: rgba(0,230,118,0.1); }
-    .tf-option.correct { border-color: var(--green) !important; background: rgba(0,230,118,0.15) !important; }
-    .tf-option.wrong { border-color: var(--red) !important; background: rgba(255,82,82,0.15) !important; }
+    .tf-option:hover { border-color: var(--green); background: var(--green-glow); transform: scale(1.03); }
+    .tf-option.selected { border-color: var(--green); background: var(--green-glow); }
+    .tf-option.correct  { border-color: var(--green) !important; background: rgba(0,230,118,0.12) !important; }
+    .tf-option.wrong    { border-color: var(--red)   !important; background: rgba(255,82,82,0.12) !important; }
 
     textarea {
       width: 100%;
       background: var(--surface2);
-      border: 2px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: 14px;
       padding: 1.2rem;
       color: var(--text);
@@ -268,13 +498,14 @@
 
     .explanation {
       margin-top: 1.5rem;
-      background: rgba(0,230,118,0.07);
-      border: 1px solid rgba(0,230,118,0.2);
+      background: rgba(0,230,118,0.06);
+      border: 1px solid rgba(0,230,118,0.18);
       border-radius: 12px;
       padding: 1.2rem 1.5rem;
-      color: #a0f0c0;
-      font-size: 0.95rem;
+      color: var(--text);
+      font-size: 0.93rem;
       line-height: 1.7;
+      animation: fadeUp 0.4s ease both;
     }
 
     .explanation strong { color: var(--green); }
@@ -284,20 +515,23 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 1.5rem;
+      animation: fadeUp 0.4s 0.2s ease both;
     }
 
-    /* ===== RESULTS ===== */
+    /* ─── RESULTS ─── */
     .results-title {
       text-align: center;
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 900;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
+      animation: fadeUp 0.5s ease both;
     }
 
     .results-sub {
       text-align: center;
       color: var(--text-dim);
       margin-bottom: 2rem;
+      animation: fadeUp 0.5s 0.1s ease both;
     }
 
     .stats-grid {
@@ -310,97 +544,273 @@
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius);
       padding: 1.5rem;
       text-align: center;
+      transition: transform 0.25s;
+      animation: fadeUp 0.5s ease both;
     }
 
+    .stat-card:hover { transform: translateY(-3px); }
+
     .stat-num { font-size: 3rem; font-weight: 900; }
-    .stat-label { color: var(--text-dim); font-size: 0.9rem; margin-top: 4px; }
+    .stat-label { color: var(--text-dim); font-size: 0.88rem; margin-top: 4px; }
 
     .score-display {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 2.5rem;
+      padding: 3rem;
       text-align: center;
       margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      animation: scaleIn 0.5s 0.2s ease both;
+    }
+
+    .score-display::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, var(--green-glow), transparent 70%);
+      pointer-events: none;
     }
 
     .score-pct { font-size: 5rem; font-weight: 900; }
-    .score-frac { font-size: 1.5rem; color: var(--text-dim); margin-top: 4px; }
+    .score-frac { font-size: 1.4rem; color: var(--text-dim); margin-top: 6px; }
 
     .results-actions {
       display: flex;
       gap: 1rem;
       justify-content: center;
+      animation: fadeUp 0.5s 0.3s ease both;
     }
 
-    /* ===== ADMIN ===== */
+    /* ─── ADMIN ─── */
     .admin-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      animation: fadeUp 0.4s ease both;
     }
 
     .admin-quiz-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
+      transition: all 0.25s;
+      animation: fadeUp 0.4s ease both;
     }
 
-    .admin-quiz-card h4 { font-size: 1.1rem; font-weight: 700; }
-    .admin-quiz-card p { color: var(--text-dim); font-size: 0.9rem; margin-top: 4px; }
+    .admin-quiz-card:hover {
+      border-color: var(--border-hover);
+      transform: translateX(-3px);
+    }
 
-    .admin-actions { display: flex; gap: 8px; }
+    .admin-quiz-card h4 { font-size: 1rem; font-weight: 800; }
+    .admin-quiz-card p  { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
 
-    /* ===== MODAL ===== */
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ─── PASSWORD MODAL ─── */
     .modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center;
       z-index: 200;
       padding: 1rem;
+      animation: fadeIn 0.25s ease both;
     }
 
     .modal {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
+      border-radius: 24px;
+      padding: 2.5rem;
       width: 100%;
-      max-width: 600px;
+      max-width: 420px;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: var(--shadow);
+      animation: scaleIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+      position: relative;
     }
 
-    .modal h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 1.5rem; }
+    /* Password Modal Specific */
+    .pwd-modal {
+      max-width: 380px;
+      text-align: center;
+    }
 
-    .form-group { margin-bottom: 1.2rem; }
+    .pwd-icon-wrap {
+      width: 72px; height: 72px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(0,230,118,0.15), rgba(0,230,118,0.05));
+      border: 1px solid rgba(0,230,118,0.25);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2rem;
+      color: var(--green);
+      animation: fadeUp 0.4s 0.1s ease both;
+    }
+
+    .pwd-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      margin-bottom: 0.4rem;
+      animation: fadeUp 0.4s 0.15s ease both;
+    }
+
+    .pwd-sub {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.4s 0.2s ease both;
+    }
+
+    .pwd-input-wrap {
+      position: relative;
+      margin-bottom: 1.2rem;
+      animation: fadeUp 0.4s 0.25s ease both;
+    }
+
+    .pwd-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 50px 14px 18px;
+      color: var(--text);
+      font-family: 'Cairo', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .pwd-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+
+    .pwd-input.error {
+      border-color: var(--red) !important;
+      box-shadow: 0 0 0 3px rgba(255,82,82,0.15) !important;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    .pwd-toggle {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .pwd-toggle:hover { color: var(--green); }
+
+    .pwd-error {
+      font-size: 0.85rem;
+      color: var(--red);
+      margin-bottom: 1rem;
+      height: 18px;
+      transition: opacity 0.2s;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .pwd-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--green);
+      color: #000;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      animation: fadeUp 0.4s 0.3s ease both;
+    }
+
+    .pwd-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 24px var(--green-glow); }
+    .pwd-btn:active { transform: translateY(0); }
+
+    .pwd-dots {
+      display: flex; gap: 8px; justify-content: center;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.4s 0.22s ease both;
+    }
+
+    .pwd-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 1.5px solid var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .pwd-dot.filled {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 8px var(--green-glow);
+      transform: scale(1.15);
+    }
+
+    /* ─── REGULAR MODAL ─── */
+    .modal-lg {
+      max-width: 600px;
+    }
+
+    .modal h3 {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group { margin-bottom: 1.1rem; }
 
     .form-group label {
       display: block;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-dim);
       margin-bottom: 6px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    .form-group input, .form-group select, .form-group textarea {
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
       width: 100%;
       background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
       padding: 10px 14px;
       color: var(--text);
       font-family: 'Cairo', sans-serif;
-      font-size: 0.95rem;
+      font-size: 0.93rem;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -409,58 +819,83 @@
     .form-group select:focus,
     .form-group textarea:focus { border-color: var(--green); }
 
-    .form-group select option { background: var(--surface2); }
+    .form-group select option { background: var(--surface2); color: var(--text); }
 
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+    .modal-actions {
+      display: flex; gap: 10px;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
 
     .hidden { display: none !important; }
 
-    /* ===== EMPTY STATE ===== */
+    /* ─── EMPTY STATE ─── */
     .empty {
       text-align: center;
       padding: 4rem 2rem;
       color: var(--text-dim);
     }
 
-    .empty i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
-    .empty p { font-size: 1.1rem; }
+    .empty i { font-size: 2.8rem; margin-bottom: 1rem; opacity: 0.3; }
+    .empty p { font-size: 1rem; }
 
-    /* ===== TOAST ===== */
+    /* ─── TOAST ─── */
     #toast {
       position: fixed;
       bottom: 2rem;
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--surface2);
+      transform: translateX(-50%) translateY(120px);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      border-radius: 14px;
+      padding: 12px 28px;
+      font-weight: 700;
+      font-size: 0.9rem;
       z-index: 999;
-      transition: transform 0.3s;
+      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
     }
 
     #toast.show { transform: translateX(-50%) translateY(0); }
-    #toast.success { border-color: var(--green); color: var(--green); }
-    #toast.error { border-color: var(--red); color: var(--red); }
+    #toast.success { border-color: rgba(0,230,118,0.4); color: var(--green); }
+    #toast.error   { border-color: rgba(255,82,82,0.4); color: var(--red); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-family: 'Cairo', sans-serif;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+      position: relative;
+      z-index: 1;
+    }
 
     @media (max-width: 600px) {
       .stats-grid { grid-template-columns: repeat(3, 1fr); }
       .score-pct { font-size: 3.5rem; }
-      .question-text { font-size: 1.1rem; }
+      .question-text { font-size: 1.05rem; }
+      nav { padding: 0 1rem; }
+      #main { padding: 1.5rem 0.75rem; }
+      .question-card { padding: 1.5rem; }
     }
   </style>
 </head>
-<body>
+<body data-theme="dark">
 
   <!-- NAVBAR -->
   <nav>
-    <div class="nav-brand">
-      <i class="fas fa-graduation-cap"></i>
+    <div class="nav-brand" onclick="showHome()">
+      <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
       امتحانات الدفعة
     </div>
     <div class="nav-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="تبديل الثيم">
+        <i class="fas fa-sun icon-sun"></i>
+        <i class="fas fa-moon icon-moon"></i>
+      </button>
       <button class="btn btn-ghost" onclick="showHome()">
         <i class="fas fa-home"></i> الرئيسية
       </button>
@@ -479,7 +914,8 @@
         <p>جاري تحميل الامتحانات...</p>
       </div>
       <div id="home-content" class="hidden">
-        <h2 class="page-title">👋Welcome to the Exams Web <span></span></h2>
+        <h2 class="page-title">👋Welcome to the Exams Web<span></span></h2>
+        <p class="page-sub">اختار الامتحان </p>
         <div id="quizzes-list"></div>
       </div>
     </div>
@@ -490,33 +926,40 @@
         <div class="quiz-header-title" id="quiz-title"></div>
         <div style="display:flex;gap:10px;align-items:center">
           <span class="progress-pill" id="progress"></span>
-          <button class="btn btn-ghost" onclick="exitQuiz()" style="color:var(--red)">
+          <button class="btn btn-danger" onclick="exitQuiz()">
             <i class="fas fa-times"></i> خروج
           </button>
         </div>
       </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+      </div>
       <div class="question-card" id="question-card"></div>
       <div class="quiz-actions">
-        <button class="btn btn-ghost" onclick="skipQuestion()">تخطي السؤال</button>
-        <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">تقديم الإجابة</button>
+        <button class="btn btn-ghost" onclick="skipQuestion()">
+          <i class="fas fa-forward"></i> تخطي السؤال
+        </button>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">
+          تقديم الإجابة <i class="fas fa-check"></i>
+        </button>
       </div>
     </div>
 
     <!-- RESULTS PAGE -->
     <div id="results-page" class="hidden">
       <h2 class="results-title">🎉 اكتمل الاختبار!</h2>
-      <p class="results-sub">إليك نتيجتك</p>
+      <p class="results-sub">إليك نتيجتك النهائية</p>
 
       <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" style="animation-delay:0.1s">
           <div class="stat-num" id="correct-count" style="color:var(--green)">0</div>
           <div class="stat-label">إجابة صحيحة</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="animation-delay:0.2s">
           <div class="stat-num" id="wrong-count" style="color:var(--red)">0</div>
           <div class="stat-label">إجابة خاطئة</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="animation-delay:0.3s">
           <div class="stat-num" id="skipped-count" style="color:var(--amber)">0</div>
           <div class="stat-label">تم تخطيها</div>
         </div>
@@ -537,7 +980,10 @@
     <!-- ADMIN PAGE -->
     <div id="admin-page" class="hidden">
       <div class="admin-header">
-        <h2 style="font-size:1.8rem;font-weight:900">لوحة الإدارة</h2>
+        <h2 style="font-size:1.8rem;font-weight:900">
+          <i class="fas fa-shield-alt" style="color:var(--green);margin-left:8px"></i>
+          لوحة الإدارة
+        </h2>
         <button class="btn btn-primary" onclick="showAddQuizModal()">
           <i class="fas fa-plus"></i> امتحان جديد
         </button>
@@ -550,9 +996,62 @@
   <!-- TOAST -->
   <div id="toast"></div>
 
+  <!-- PASSWORD MODAL -->
+  <div id="pwd-modal" class="modal-overlay hidden">
+    <div class="modal pwd-modal">
+      <div class="pwd-icon-wrap">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h3 class="pwd-title">وضع الإدارة</h3>
+      <p class="pwd-sub">ادخل كلمة السر للوصول للوحة التحكم</p>
+
+      <div class="pwd-dots" id="pwd-dots">
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+        <div class="pwd-dot"></div>
+      </div>
+
+      <div class="pwd-input-wrap">
+        <input
+          type="password"
+          class="pwd-input"
+          id="pwd-input"
+          placeholder="● ● ● ● ● ● ● ●"
+          maxlength="20"
+          oninput="onPwdInput()"
+          onkeydown="if(event.key==='Enter') submitPwd()"
+          autocomplete="off"
+        >
+        <button class="pwd-toggle" onclick="togglePwdVisibility()" id="pwd-eye">
+          <i class="fas fa-eye" id="pwd-eye-icon"></i>
+        </button>
+      </div>
+
+      <div class="pwd-error" id="pwd-error"></div>
+
+      <button class="pwd-btn" onclick="submitPwd()">
+        <i class="fas fa-unlock-alt"></i>
+        دخول
+      </button>
+
+      <button
+        class="btn btn-ghost"
+        onclick="closeModal('pwd-modal')"
+        style="width:100%;margin-top:10px;justify-content:center"
+      >
+        إلغاء
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL: Add/Edit Quiz -->
   <div id="quiz-modal" class="modal-overlay hidden">
-    <div class="modal">
+    <div class="modal modal-lg">
       <h3 id="modal-title">إضافة امتحان جديد</h3>
       <div class="form-group">
         <label>اسم الامتحان</label>
@@ -567,7 +1066,7 @@
 
   <!-- MODAL: Add Question -->
   <div id="question-modal" class="modal-overlay hidden">
-    <div class="modal">
+    <div class="modal modal-lg">
       <h3 id="question-modal-title">إضافة سؤال جديد</h3>
 
       <div class="form-group">
@@ -620,6 +1119,10 @@
             <option value="1">خطأ</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>سبب الإجابة (اختياري)</label>
+          <textarea id="tf-reason" rows="2" placeholder="مثال: الجملة خاطئة لأن..."></textarea>
+        </div>
       </div>
 
       <div id="essay-section" class="hidden">
@@ -641,8 +1144,13 @@
     </div>
   </div>
 
+  <footer>
+    <div style="font-size:0.9rem;font-weight:700">BY : STAR BOY ⭐</div>
+    <div style="font-size:0.8rem;margin-top:6px">الفرقة الثالثة — قسم نظم ومعلومات</div>
+  </footer>
+
   <script>
-    // ====================== SUPABASE CONFIG ======================
+    // ====================== SUPABASE ======================
     const SUPABASE_URL = 'https://qokkdckumwyykjeysyiq.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_vHyhdum02ZCvIUqPQWX8Cw_4PA7aJYw';
 
@@ -665,7 +1173,21 @@
     let selectedIndex = null;
     let editingQuizId = null;
     let addingQuestionToQuizId = null;
+    let editingQuestionIndex = null;
     const ADMIN_PASSWORD = "leader123";
+
+    // ====================== THEME ======================
+    function toggleTheme() {
+      const body = document.body;
+      const current = body.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.setAttribute('data-theme', savedTheme);
 
     // ====================== TOAST ======================
     function toast(msg, type = 'success') {
@@ -675,7 +1197,7 @@
       setTimeout(() => el.className = '', 2500);
     }
 
-    // ====================== API FUNCTIONS ======================
+    // ====================== API ======================
     async function loadQuizzes() {
       try {
         const res = await api('quizzes?select=*&order=id');
@@ -692,7 +1214,7 @@
     async function createQuiz(title) {
       const res = await api('quizzes', {
         method: 'POST',
-        body: JSON.stringify({ title, questions: [] })
+        body: JSON.stringify({ title, questions: [], published: false })
       });
       if (!res.ok) throw new Error();
       return (await res.json())[0];
@@ -711,18 +1233,20 @@
       if (!res.ok) throw new Error();
     }
 
-    // ====================== RENDER HOME ======================
+    // ====================== HOME ======================
     function renderHome() {
       document.getElementById('home-loading').classList.add('hidden');
       document.getElementById('home-content').classList.remove('hidden');
 
       const container = document.getElementById('quizzes-list');
-      if (quizzes.length === 0) {
-        container.innerHTML = `<div class="empty"><i class="fas fa-book-open"></i><p>لا توجد امتحانات بعد</p></div>`;
+      const published = quizzes.filter(q => q.published);
+      if (published.length === 0) {
+        container.innerHTML = `<div class="empty"><i class="fas fa-book-open"></i><p>لا توجد امتحانات متاحة حالياً</p></div>`;
         return;
       }
-      container.innerHTML = quizzes.map(q => `
-        <div class="quiz-card" onclick="startQuiz(${q.id})">
+      container.innerHTML = published.map((q, idx) => `
+        <div class="quiz-card" onclick="startQuiz(${q.id})" style="animation-delay:${idx * 0.07}s">
+          <div class="q-icon"><i class="fas fa-file-alt"></i></div>
           <h3>${q.title}</h3>
           <p>${(q.questions || []).length} سؤال</p>
           <div class="arrow"><i class="fas fa-play-circle"></i> ابدأ الامتحان</div>
@@ -731,7 +1255,41 @@
     }
 
     // ====================== QUIZ ======================
+    function saveQuizState() {
+      if (!currentQuiz) return;
+      sessionStorage.setItem('quizState', JSON.stringify({
+        quizId: currentQuiz.id,
+        currentQuestionIndex,
+        userAnswers,
+        selectedIndex
+      }));
+    }
+
+    function restoreQuizState() {
+      const saved = sessionStorage.getItem('quizState');
+      if (!saved || quizzes.length === 0) return;
+      const state = JSON.parse(saved);
+      const quiz = quizzes.find(q => q.id === state.quizId);
+      if (!quiz) return;
+      currentQuiz = quiz;
+      currentQuestionIndex = state.currentQuestionIndex;
+      userAnswers = state.userAnswers;
+      selectedIndex = state.selectedIndex;
+      showPage('quiz-page');
+      document.getElementById('quiz-title').textContent = currentQuiz.title;
+      showCurrentQuestion();
+      if (selectedIndex !== null) {
+        setTimeout(() => {
+          const el = document.getElementById(`opt-${selectedIndex}`);
+          if (el) el.classList.add('selected');
+        }, 50);
+      }
+      sessionStorage.removeItem('quizState');
+      toast('تم استعادة الامتحان ✅');
+    }
+
     function startQuiz(id) {
+      sessionStorage.removeItem('quizState');
       currentQuiz = quizzes.find(q => q.id === id);
       if (!currentQuiz.questions || currentQuiz.questions.length === 0) {
         return toast('هذا الامتحان لا يحتوي على أسئلة بعد!', 'error');
@@ -744,16 +1302,26 @@
       showCurrentQuestion();
     }
 
+    function updateProgressBar() {
+      const total = currentQuiz.questions.length;
+      const pct = ((currentQuestionIndex + 1) / total) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+    }
+
     function showCurrentQuestion() {
       selectedIndex = null;
       const q = currentQuiz.questions[currentQuestionIndex];
       const total = currentQuiz.questions.length;
       document.getElementById('progress').textContent = `${currentQuestionIndex + 1} / ${total}`;
-      document.getElementById('submit-btn').textContent =
-        currentQuestionIndex === total - 1 ? 'إنهاء الامتحان' : 'تقديم الإجابة';
+      updateProgressBar();
+
+      const isLast = currentQuestionIndex === total - 1;
+      document.getElementById('submit-btn').innerHTML = isLast
+        ? 'إنهاء الامتحان <i class="fas fa-flag-checkered"></i>'
+        : 'تقديم الإجابة <i class="fas fa-check"></i>';
 
       let html = `
-        <div class="question-num">السؤال ${currentQuestionIndex + 1}</div>
+        <div class="question-num">السؤال ${currentQuestionIndex + 1} من ${total}</div>
         <div class="question-text">${q.question}</div>
       `;
 
@@ -773,20 +1341,23 @@
             <div class="tf-option" id="opt-0" onclick="selectOption(0)">✅ صح</div>
             <div class="tf-option" id="opt-1" onclick="selectOption(1)">❌ خطأ</div>
           </div>`;
-      } else if (q.type === 'essay') {
+      } else {
         html += `<textarea id="essay-input" rows="6" placeholder="اكتب إجابتك هنا..."></textarea>`;
       }
 
       document.getElementById('question-card').innerHTML = html;
+      document.getElementById('question-card').style.animation = 'none';
+      requestAnimationFrame(() => {
+        document.getElementById('question-card').style.animation = '';
+      });
     }
 
     function selectOption(i) {
       selectedIndex = i;
-      document.querySelectorAll('.option, .tf-option').forEach(el => {
-        el.classList.remove('selected');
-      });
+      document.querySelectorAll('.option, .tf-option').forEach(el => el.classList.remove('selected'));
       const el = document.getElementById(`opt-${i}`);
       if (el) el.classList.add('selected');
+      saveQuizState();
     }
 
     function submitAnswer() {
@@ -805,10 +1376,11 @@
     function showFeedback() {
       const q = currentQuiz.questions[currentQuestionIndex];
       const container = document.getElementById('question-card');
+      const userChoice = userAnswers[currentQuestionIndex];
+      const isCorrect = (q.type === 'mcq' || q.type === 'tf') ? userChoice === q.correct : false;
       let html = `<div class="question-text">${q.question}</div>`;
 
       if (q.type === 'mcq') {
-        const userChoice = userAnswers[currentQuestionIndex];
         html += `<div class="options-grid">`;
         q.options.forEach((opt, i) => {
           let cls = '';
@@ -823,34 +1395,45 @@
             </div>`;
         });
         html += `</div>`;
+        if (!isCorrect && q.explanation) {
+          html += `<div class="explanation"><strong>💡 الإجابة الصحيحة:</strong> ${q.explanation}</div>`;
+        }
       } else if (q.type === 'tf') {
-        const userChoice = userAnswers[currentQuestionIndex];
-        ['صح', 'خطأ'].forEach((label, i) => {
+        html += `<div class="tf-grid">`;
+        ['✅ صح', '❌ خطأ'].forEach((label, i) => {
           let cls = '';
           if (i === q.correct) cls = 'correct';
           else if (i === userChoice) cls = 'wrong';
-          html += `<div class="tf-option ${cls}" style="display:inline-block;width:48%;margin:1%">${label}</div>`;
+          html += `<div class="tf-option ${cls}">${label}</div>`;
         });
+        html += `</div>`;
+        if (!isCorrect) {
+          const correctLabel = q.correct === 0 ? 'صح' : 'خطأ';
+          html += `<div class="explanation">
+            <strong>💡 الإجابة الصحيحة هي: ${correctLabel}</strong>
+            ${q.explanation ? `<br><br>${q.explanation}` : ''}
+          </div>`;
+        }
       } else {
         const answer = userAnswers[currentQuestionIndex];
-        const isCorrect = q.keywords && q.keywords.some(kw => answer.toLowerCase().includes(kw.toLowerCase()));
+        const essayCorrect = q.keywords && q.keywords.some(kw => answer.toLowerCase().includes(kw.toLowerCase()));
         html += `
-          <div style="background:var(--surface2);border-radius:12px;padding:1.2rem;margin-bottom:1rem">
-            <p style="color:var(--text-dim);margin-bottom:6px">إجابتك:</p>
+          <div style="background:var(--surface2);border-radius:12px;padding:1.2rem;margin-bottom:1rem;border:1px solid var(--border)">
+            <p style="color:var(--text-dim);margin-bottom:6px;font-size:0.85rem;font-weight:700">إجابتك:</p>
             <p>${answer}</p>
           </div>
-          <div style="font-size:1.2rem;font-weight:700;color:${isCorrect ? 'var(--green)' : 'var(--red)'}">
-            ${isCorrect ? '✅ إجابة صحيحة' : '❌ إجابة خاطئة'}
+          <div style="font-size:1.1rem;font-weight:800;color:${essayCorrect ? 'var(--green)' : 'var(--red)'}">
+            ${essayCorrect ? '✅ إجابة صحيحة' : '❌ إجابة خاطئة'}
           </div>`;
+        if (!essayCorrect && q.explanation) {
+          html += `<div class="explanation"><strong>💡 الإجابة الصحيحة:</strong> ${q.explanation}</div>`;
+        }
       }
 
-      if (q.explanation) {
-        html += `<div class="explanation"><strong>💡 الشرح:</strong> ${q.explanation}</div>`;
-      }
-
-      html += `<div style="text-align:center;margin-top:1.5rem">
-        <button class="btn btn-primary" onclick="nextQuestion()" style="padding:12px 40px;font-size:1.1rem">
-          ${currentQuestionIndex === currentQuiz.questions.length - 1 ? 'عرض النتائج' : 'السؤال التالي'} <i class="fas fa-arrow-left"></i>
+      const isLast = currentQuestionIndex === currentQuiz.questions.length - 1;
+      html += `<div style="text-align:center;margin-top:1.8rem">
+        <button class="btn btn-primary" onclick="nextQuestion()" style="padding:13px 44px;font-size:1rem">
+          ${isLast ? 'عرض النتائج <i class="fas fa-chart-bar"></i>' : 'السؤال التالي <i class="fas fa-arrow-left"></i>'}
         </button>
       </div>`;
 
@@ -863,11 +1446,8 @@
       document.getElementById('submit-btn').style.display = '';
       document.querySelector('.quiz-actions button:first-child').style.display = '';
       currentQuestionIndex++;
-      if (currentQuestionIndex >= currentQuiz.questions.length) {
-        showResults();
-      } else {
-        showCurrentQuestion();
-      }
+      if (currentQuestionIndex >= currentQuiz.questions.length) showResults();
+      else showCurrentQuestion();
     }
 
     function skipQuestion() {
@@ -908,36 +1488,137 @@
 
     function backToHome() { showHome(); }
 
-    // ====================== ADMIN ======================
+    // ====================== PASSWORD MODAL ======================
     function promptAdmin() {
-      const pass = prompt('🔑 كلمة السر:');
-      if (pass !== ADMIN_PASSWORD) return toast('كلمة سر خاطئة!', 'error');
+      document.getElementById('pwd-input').value = '';
+      document.getElementById('pwd-error').textContent = '';
+      document.getElementById('pwd-input').classList.remove('error');
+      updatePwdDots();
+      document.getElementById('pwd-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('pwd-input').focus(), 300);
+    }
+
+    function onPwdInput() {
+      document.getElementById('pwd-error').textContent = '';
+      document.getElementById('pwd-input').classList.remove('error');
+      updatePwdDots();
+    }
+
+    function updatePwdDots() {
+      const val = document.getElementById('pwd-input').value;
+      const dots = document.querySelectorAll('.pwd-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('filled', i < val.length);
+      });
+    }
+
+    function togglePwdVisibility() {
+      const input = document.getElementById('pwd-input');
+      const icon = document.getElementById('pwd-eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        input.style.letterSpacing = '1px';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        input.style.letterSpacing = '3px';
+        icon.className = 'fas fa-eye';
+      }
+    }
+
+    function submitPwd() {
+      const val = document.getElementById('pwd-input').value;
+      if (val !== ADMIN_PASSWORD) {
+        document.getElementById('pwd-error').textContent = '❌ كلمة السر غلط، حاول تاني';
+        document.getElementById('pwd-input').classList.add('error');
+        document.getElementById('pwd-input').value = '';
+        updatePwdDots();
+        setTimeout(() => document.getElementById('pwd-input').focus(), 100);
+        return;
+      }
+      closeModal('pwd-modal');
       showPage('admin-page');
       renderAdminQuizzes();
     }
 
+    // ====================== ADMIN ======================
     function renderAdminQuizzes() {
       const container = document.getElementById('admin-quizzes-list');
       if (quizzes.length === 0) {
         container.innerHTML = `<div class="empty"><i class="fas fa-plus-circle"></i><p>لا توجد امتحانات — اضغط "امتحان جديد"</p></div>`;
         return;
       }
-      container.innerHTML = quizzes.map(q => `
-        <div class="admin-quiz-card">
-          <div>
-            <h4>${q.title}</h4>
-            <p>${(q.questions || []).length} سؤال</p>
+
+      const allPublished = quizzes.every(q => q.published);
+
+      let html = `
+        <div style="display:flex;gap:10px;margin-bottom:1.2rem;flex-wrap:wrap" class="animate-up">
+          <button class="btn btn-blue" onclick="toggleSelectAll()" style="flex:1">
+            <i class="fas fa-${allPublished ? 'eye-slash' : 'eye'}"></i>
+            ${allPublished ? 'إخفاء الكل' : 'عرض الكل في الرئيسية'}
+          </button>
+        </div>
+      `;
+
+      html += quizzes.map((q, idx) => `
+        <div class="admin-quiz-card" style="border-color:${q.published ? 'rgba(0,230,118,0.3)' : 'var(--border)'};animation-delay:${idx * 0.05}s">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="width:8px;height:8px;border-radius:50%;background:${q.published ? 'var(--green)' : 'var(--text-muted)'};display:inline-block;box-shadow:${q.published ? '0 0 6px var(--green)' : 'none'};flex-shrink:0"></span>
+              <h4>${q.title}</h4>
+            </div>
+            <p style="margin-right:16px">
+              ${(q.questions || []).length} سؤال &nbsp;•&nbsp;
+              <span style="color:${q.published ? 'var(--green)' : 'var(--text-dim)'}">
+                ${q.published ? '🟢 معروض للطلاب' : '⚫ مخفي'}
+              </span>
+            </p>
           </div>
           <div class="admin-actions">
-            <button class="btn btn-blue" onclick="openEditQuiz(${q.id})">
-              <i class="fas fa-edit"></i> تعديل
+            <button class="btn btn-blue" onclick="openEditQuiz(${q.id})" title="تعديل الأسئلة">
+              <i class="fas fa-edit"></i>
             </button>
-            <button class="btn btn-danger" onclick="confirmDeleteQuiz(${q.id})">
-              <i class="fas fa-trash"></i> حذف
+            <button onclick="togglePublish(${q.id})"
+              class="btn"
+              style="background:${q.published ? 'var(--surface3)' : 'var(--green)'};color:${q.published ? 'var(--text-dim)' : '#000'};border-color:transparent"
+              title="${q.published ? 'إخفاء' : 'عرض'}">
+              <i class="fas fa-${q.published ? 'eye-slash' : 'eye'}"></i>
+              ${q.published ? 'إخفاء' : 'عرض'}
+            </button>
+            <button class="btn btn-danger" onclick="confirmDeleteQuiz(${q.id})" title="حذف">
+              <i class="fas fa-trash"></i>
             </button>
           </div>
         </div>
       `).join('');
+
+      container.innerHTML = html;
+    }
+
+    async function togglePublish(id) {
+      const quiz = quizzes.find(q => q.id === id);
+      const newVal = !quiz.published;
+      try {
+        await updateQuiz(id, { published: newVal });
+        quiz.published = newVal;
+        renderAdminQuizzes();
+        toast(newVal ? '✅ تم عرض الامتحان للطلاب' : '🔒 تم إخفاء الامتحان', newVal ? 'success' : 'error');
+      } catch {
+        toast('خطأ في التحديث!', 'error');
+      }
+    }
+
+    async function toggleSelectAll() {
+      const allPublished = quizzes.every(q => q.published);
+      const newVal = !allPublished;
+      try {
+        await Promise.all(quizzes.map(q => updateQuiz(q.id, { published: newVal })));
+        quizzes.forEach(q => q.published = newVal);
+        renderAdminQuizzes();
+        toast(newVal ? '✅ تم عرض جميع الامتحانات' : '🔒 تم إخفاء جميع الامتحانات', newVal ? 'success' : 'error');
+      } catch {
+        toast('خطأ في التحديث!', 'error');
+      }
     }
 
     function showAddQuizModal() {
@@ -980,18 +1661,18 @@
       }
     }
 
-    // ===== EDIT QUIZ (add/remove questions) =====
+    // ─── EDIT QUIZ ───
     function openEditQuiz(id) {
       addingQuestionToQuizId = id;
       const quiz = quizzes.find(q => q.id === id);
       const container = document.getElementById('admin-quizzes-list');
 
       let html = `
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem" class="animate-up">
           <button class="btn btn-ghost" onclick="renderAdminQuizzes()">
             <i class="fas fa-arrow-right"></i> رجوع
           </button>
-          <h3 style="font-size:1.4rem;font-weight:900">${quiz.title}</h3>
+          <h3 style="font-size:1.3rem;font-weight:900">${quiz.title}</h3>
         </div>
         <button class="btn btn-primary" onclick="openAddQuestionModal()" style="margin-bottom:1.2rem">
           <i class="fas fa-plus"></i> إضافة سؤال
@@ -1001,12 +1682,16 @@
 
       (quiz.questions || []).forEach((q, i) => {
         html += `
-          <div class="admin-quiz-card">
+          <div class="admin-quiz-card" style="animation-delay:${i * 0.05}s">
             <div style="flex:1;margin-left:1rem">
-              <p style="font-weight:600">${i + 1}. ${q.question.substring(0, 80)}${q.question.length > 80 ? '...' : ''}</p>
-              <p style="color:var(--text-dim);font-size:0.85rem;margin-top:4px">${q.type === 'mcq' ? 'اختياري' : q.type === 'tf' ? 'صح/خطأ' : 'مقالي'}</p>
+              <p style="font-weight:700;line-height:1.5">${i + 1}. ${q.question.substring(0, 80)}${q.question.length > 80 ? '...' : ''}</p>
+              <p style="margin-top:4px">
+                <span style="background:var(--surface3);padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700">
+                  ${q.type === 'mcq' ? 'اختياري' : q.type === 'tf' ? 'صح/خطأ' : 'مقالي'}
+                </span>
+              </p>
             </div>
-            <button class="btn btn-blue" onclick="openEditQuestionModal(${id}, ${i})" style="margin-left:8px">
+            <button class="btn btn-blue" onclick="openEditQuestionModal(${id}, ${i})" style="margin-left:6px">
               <i class="fas fa-edit"></i>
             </button>
             <button class="btn btn-danger" onclick="deleteQuestion(${id}, ${i})">
@@ -1024,8 +1709,6 @@
       container.innerHTML = html;
     }
 
-    let editingQuestionIndex = null;
-
     function openEditQuestionModal(quizId, qIndex) {
       addingQuestionToQuizId = quizId;
       editingQuestionIndex = qIndex;
@@ -1039,6 +1722,7 @@
         document.getElementById('correct-mcq').value = q.correct;
       } else if (q.type === 'tf') {
         document.getElementById('correct-tf').value = q.correct;
+        document.getElementById('tf-reason').value = q.explanation || '';
       } else {
         document.getElementById('keywords').value = (q.keywords || []).join(', ');
       }
@@ -1057,6 +1741,7 @@
       ['opt-0','opt-1','opt-2','opt-3'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('correct-mcq').value = '0';
       document.getElementById('correct-tf').value = '0';
+      document.getElementById('tf-reason').value = '';
       document.getElementById('keywords').value = '';
       document.getElementById('q-explanation').value = '';
       updateQuestionForm();
@@ -1075,7 +1760,10 @@
       const questionText = document.getElementById('q-text').value.trim();
       if (!questionText) return toast('اكتب نص السؤال!', 'error');
 
-      let q = { id: Date.now(), type, question: questionText, explanation: document.getElementById('q-explanation').value.trim() };
+      let q = {
+        id: Date.now(), type, question: questionText,
+        explanation: document.getElementById('q-explanation').value.trim()
+      };
 
       if (type === 'mcq') {
         const opts = ['opt-0','opt-1','opt-2','opt-3'].map(id => document.getElementById(id).value.trim());
@@ -1085,6 +1773,7 @@
       } else if (type === 'tf') {
         q.options = ['صح', 'خطأ'];
         q.correct = parseInt(document.getElementById('correct-tf').value);
+        q.explanation = document.getElementById('tf-reason').value.trim() || document.getElementById('q-explanation').value.trim();
       } else {
         const kw = document.getElementById('keywords').value.trim();
         q.keywords = kw ? kw.split(',').map(k => k.trim()) : [];
@@ -1144,14 +1833,24 @@
       document.getElementById(id).classList.add('hidden');
     }
 
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+          const modals = ['pwd-modal', 'quiz-modal', 'question-modal'];
+          modals.forEach(m => {
+            if (this.id === m) closeModal(m);
+          });
+        }
+      });
+    });
+
     // ====================== START ======================
-    loadQuizzes();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && currentQuiz) saveQuizState();
+    });
+
+    loadQuizzes().then(() => restoreQuizState());
   </script>
-
-  <footer style="text-align:center; padding: 2rem; color: #7a7a9a; font-family: 'Cairo', sans-serif; border-top: 1px solid #2a2a3a; margin-top: 3rem;">
-    <div style="font-size: 0.9rem;">⭐BY : STAR BOY</div>
-    <div style="font-size: 0.8rem; margin-top: 6px;">الفرقة الثالثة — قسم نظم ومعلومات</div>
-  </footer>
-
 </body>
 </html>
