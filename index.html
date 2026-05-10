@@ -618,6 +618,93 @@
 
     .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
+    /* ─── SELECTION MODE ─── */
+    .admin-quiz-card.selected-card {
+      border-color: var(--green) !important;
+      background: var(--green-glow) !important;
+    }
+
+    .quiz-checkbox {
+      width: 22px; height: 22px;
+      border-radius: 7px;
+      border: 2px solid var(--text-muted);
+      background: var(--surface2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+      margin-left: 4px;
+    }
+
+    .quiz-checkbox.checked {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 10px var(--green-glow);
+      transform: scale(1.1);
+    }
+
+    .quiz-checkbox.checked::after {
+      content: '';
+      width: 6px; height: 10px;
+      border: 2px solid #000;
+      border-top: none; border-right: none;
+      transform: rotate(-45deg) translate(1px, -1px);
+      display: block;
+    }
+
+    /* ─── BULK ACTION BAR ─── */
+    #bulk-bar {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 300;
+      transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+    }
+
+    #bulk-bar.visible {
+      transform: translateX(-50%) translateY(0);
+      box-shadow: var(--shadow), 0 0 40px rgba(255,82,82,0.15);
+    }
+
+    .bulk-count {
+      background: var(--green);
+      color: #000;
+      font-weight: 900;
+      font-size: 0.88rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .bulk-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+
+    .btn-select-mode {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .btn-select-mode.active {
+      background: rgba(0,230,118,0.1);
+      color: var(--green);
+      border-color: rgba(0,230,118,0.3);
+    }
+
     /* ─── PASSWORD MODAL ─── */
     .modal-overlay {
       position: fixed; inset: 0;
@@ -915,7 +1002,7 @@
       </div>
       <div id="home-content" class="hidden">
         <h2 class="page-title">👋Welcome to the Exams Web<span></span></h2>
-        <p class="page-sub">اختار الامتحان </p>
+        <p class="page-sub">اختر الامتحان </p>
         <div id="quizzes-list"></div>
       </div>
     </div>
@@ -991,6 +1078,19 @@
       <div id="admin-quizzes-list"></div>
     </div>
 
+  </div>
+
+  <!-- BULK ACTION BAR -->
+  <div id="bulk-bar">
+    <span class="bulk-count" id="bulk-count">0</span>
+    <span class="bulk-label">امتحان محدد</span>
+    <div style="width:1px;height:24px;background:var(--border)"></div>
+    <button class="btn btn-danger" onclick="deleteSelectedQuizzes()" style="gap:6px">
+      <i class="fas fa-trash"></i> حذف المحدد
+    </button>
+    <button class="btn btn-ghost" onclick="clearSelection()" style="padding:9px 14px">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 
   <!-- TOAST -->
@@ -1174,6 +1274,8 @@
     let editingQuizId = null;
     let addingQuestionToQuizId = null;
     let editingQuestionIndex = null;
+    let selectedQuizIds = new Set();
+    let selectMode = false;
     const ADMIN_PASSWORD = "leader123";
 
     // ====================== THEME ======================
@@ -1546,22 +1648,40 @@
       const container = document.getElementById('admin-quizzes-list');
       if (quizzes.length === 0) {
         container.innerHTML = `<div class="empty"><i class="fas fa-plus-circle"></i><p>لا توجد امتحانات — اضغط "امتحان جديد"</p></div>`;
+        updateBulkBar();
         return;
       }
 
       const allPublished = quizzes.every(q => q.published);
+      const allChecked = quizzes.length > 0 && quizzes.every(q => selectedQuizIds.has(q.id));
 
       let html = `
-        <div style="display:flex;gap:10px;margin-bottom:1.2rem;flex-wrap:wrap" class="animate-up">
+        <div style="display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap;align-items:center" class="animate-up">
           <button class="btn btn-blue" onclick="toggleSelectAll()" style="flex:1">
             <i class="fas fa-${allPublished ? 'eye-slash' : 'eye'}"></i>
-            ${allPublished ? 'إخفاء الكل' : 'عرض الكل في الرئيسية'}
+            ${allPublished ? 'إخفاء الكل' : 'عرض الكل'}
           </button>
+          <button class="btn btn-select-mode ${selectMode ? 'active' : ''}" onclick="toggleSelectMode()">
+            <i class="fas fa-${selectMode ? 'times' : 'check-square'}"></i>
+            ${selectMode ? 'إلغاء التحديد' : 'تحديد'}
+          </button>
+          ${selectMode ? `
+          <button class="btn btn-ghost" onclick="selectAllQuizzes()" style="font-size:0.85rem;padding:9px 12px">
+            <i class="fas fa-${allChecked ? 'square' : 'check-double'}"></i>
+            ${allChecked ? 'إلغاء الكل' : 'تحديد الكل'}
+          </button>` : ''}
         </div>
       `;
 
-      html += quizzes.map((q, idx) => `
-        <div class="admin-quiz-card" style="border-color:${q.published ? 'rgba(0,230,118,0.3)' : 'var(--border)'};animation-delay:${idx * 0.05}s">
+      html += quizzes.map((q, idx) => {
+        const isChecked = selectedQuizIds.has(q.id);
+        return `
+        <div class="admin-quiz-card ${isChecked ? 'selected-card' : ''}"
+          style="border-color:${isChecked ? 'var(--green)' : q.published ? 'rgba(0,230,118,0.3)' : 'var(--border)'};animation-delay:${idx * 0.05}s;cursor:${selectMode ? 'pointer' : 'default'}"
+          onclick="${selectMode ? `toggleQuizCheck(${q.id})` : 'void(0)'}">
+          ${selectMode ? `
+          <div class="quiz-checkbox ${isChecked ? 'checked' : ''}" onclick="event.stopPropagation();toggleQuizCheck(${q.id})"></div>
+          ` : ''}
           <div style="flex:1">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
               <span style="width:8px;height:8px;border-radius:50%;background:${q.published ? 'var(--green)' : 'var(--text-muted)'};display:inline-block;box-shadow:${q.published ? '0 0 6px var(--green)' : 'none'};flex-shrink:0"></span>
@@ -1574,6 +1694,7 @@
               </span>
             </p>
           </div>
+          ${!selectMode ? `
           <div class="admin-actions">
             <button class="btn btn-blue" onclick="openEditQuiz(${q.id})" title="تعديل الأسئلة">
               <i class="fas fa-edit"></i>
@@ -1588,11 +1709,67 @@
             <button class="btn btn-danger" onclick="confirmDeleteQuiz(${q.id})" title="حذف">
               <i class="fas fa-trash"></i>
             </button>
-          </div>
+          </div>` : ''}
         </div>
-      `).join('');
+      `}).join('');
 
       container.innerHTML = html;
+      updateBulkBar();
+    }
+
+    function toggleSelectMode() {
+      selectMode = !selectMode;
+      if (!selectMode) {
+        selectedQuizIds.clear();
+      }
+      renderAdminQuizzes();
+    }
+
+    function toggleQuizCheck(id) {
+      if (selectedQuizIds.has(id)) selectedQuizIds.delete(id);
+      else selectedQuizIds.add(id);
+      renderAdminQuizzes();
+    }
+
+    function selectAllQuizzes() {
+      const allChecked = quizzes.every(q => selectedQuizIds.has(q.id));
+      if (allChecked) selectedQuizIds.clear();
+      else quizzes.forEach(q => selectedQuizIds.add(q.id));
+      renderAdminQuizzes();
+    }
+
+    function clearSelection() {
+      selectedQuizIds.clear();
+      selectMode = false;
+      renderAdminQuizzes();
+    }
+
+    function updateBulkBar() {
+      const bar = document.getElementById('bulk-bar');
+      const count = selectedQuizIds.size;
+      document.getElementById('bulk-count').textContent = count;
+      const label = document.querySelector('#bulk-bar .bulk-label');
+      if (label) label.textContent = count === 1 ? 'امتحان محدد' : 'امتحانات محددة';
+      if (count > 0) bar.classList.add('visible');
+      else bar.classList.remove('visible');
+    }
+
+    async function deleteSelectedQuizzes() {
+      const count = selectedQuizIds.size;
+      if (count === 0) return;
+      if (!confirm(`هل تريد حذف ${count} امتحان${count > 1 ? 'ات' : ''} نهائياً؟`)) return;
+
+      const ids = [...selectedQuizIds];
+      try {
+        await Promise.all(ids.map(id => deleteQuizFromDB(id)));
+        quizzes = quizzes.filter(q => !ids.includes(q.id));
+        selectedQuizIds.clear();
+        selectMode = false;
+        renderAdminQuizzes();
+        toast(`✅ تم حذف ${count} امتحان${count > 1 ? 'ات' : ''}`);
+      } catch {
+        toast('خطأ في الحذف!', 'error');
+      }
     }
 
     async function togglePublish(id) {
@@ -1823,6 +2000,8 @@
     }
 
     function showHome() {
+      selectedQuizIds.clear();
+      selectMode = false;
       showPage('home-page');
       document.getElementById('home-loading').classList.remove('hidden');
       document.getElementById('home-content').classList.add('hidden');
