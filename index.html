@@ -1178,6 +1178,58 @@
       color: var(--text);
     }
 
+    /* ─── VISITOR COUNTER ─── */
+    #visitor-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      transition: all 0.3s;
+      cursor: default;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    #visitor-badge:hover {
+      border-color: var(--green);
+      color: var(--text);
+    }
+
+    .visitor-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.4); opacity: 0.7; }
+    }
+
+    #visitor-count {
+      color: var(--green);
+      font-weight: 900;
+      font-size: 0.88rem;
+      min-width: 10px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    /* hide text on very small screens, keep dot+number */
+    @media (max-width: 480px) {
+      .visitor-label { display: none; }
+      #visitor-badge { padding: 6px 10px; }
+    }
+
     /* about btn in nav */
     .btn-about {
       width: 44px; height: 44px;
@@ -1229,6 +1281,11 @@
       امتحانات الدفعة
     </div>
     <div class="nav-actions">
+      <div id="visitor-badge" title="الزوار النشطين الآن">
+        <span class="visitor-dot"></span>
+        <span id="visitor-count">—</span>
+        <span class="visitor-label">زائر</span>
+      </div>
       <button class="btn-about" onclick="openAbout()" title="تواصل مع المطور">
         <i class="fas fa-user-circle"></i>
       </button>
@@ -2398,12 +2455,75 @@
       });
     });
 
+    // ====================== VISITOR TRACKING ======================
+    const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    let visitorInterval = null;
+
+    async function pingVisitor() {
+      try {
+        // Upsert this session with current timestamp
+        await api('active_visitors', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ session_id: SESSION_ID, last_seen: new Date().toISOString() })
+        });
+        // Delete stale sessions older than 2 minutes
+        await api('active_visitors?last_seen=lt.' + new Date(Date.now() - 120000).toISOString(), {
+          method: 'DELETE'
+        });
+        // Count active visitors
+        const res = await api('active_visitors?select=id', {
+          headers: { 'Prefer': 'count=exact', 'Range': '0-0' }
+        });
+        const count = res.headers.get('content-range')?.split('/')[1] ?? '—';
+        updateVisitorUI(count);
+      } catch {
+        updateVisitorUI('—');
+      }
+    }
+
+    function updateVisitorUI(count) {
+      const el = document.getElementById('visitor-count');
+      const label = document.querySelector('.visitor-label');
+      if (!el) return;
+      const n = parseInt(count);
+      el.textContent = isNaN(n) ? '—' : n;
+      if (label) {
+        label.textContent = !isNaN(n) && n !== 1 ? 'زوار' : 'زائر';
+      }
+    }
+
+    function startVisitorTracking() {
+      pingVisitor();
+      visitorInterval = setInterval(pingVisitor, 30000); // كل 30 ثانية
+    }
+
+    // لما الصفحة تتقفل نوقف البينج
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        if (currentQuiz) saveQuizState();
+        clearInterval(visitorInterval);
+      } else {
+        startVisitorTracking();
+      }
+    });
+
+    // لما الصفحة تتقفل نمسح الجلسة
+    window.addEventListener('beforeunload', () => {
+      navigator.sendBeacon(
+        `${SUPABASE_URL}/rest/v1/active_visitors?session_id=eq.${SESSION_ID}`,
+        // POST مش مهم — بس الـ cleanup هيمسحها بعد دقيقتين تلقائي
+        null
+      );
+    });
+
     // ====================== START ======================
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden' && currentQuiz) saveQuizState();
     });
 
     loadQuizzes().then(() => restoreQuizState());
+    startVisitorTracking();
   </script>
 </body>
 </html>
