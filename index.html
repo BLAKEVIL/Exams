@@ -1178,6 +1178,155 @@
       color: var(--text);
     }
 
+    /* ─── LIVE SCORE BAR ─── */
+    .live-score-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .live-score-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 1rem;
+      border: 1.5px solid transparent;
+      transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .live-score-pill.correct-pill {
+      background: rgba(0,230,118,0.08);
+      border-color: rgba(0,230,118,0.2);
+      color: var(--green);
+    }
+
+    .live-score-pill.wrong-pill {
+      background: rgba(255,82,82,0.08);
+      border-color: rgba(255,82,82,0.2);
+      color: var(--red);
+    }
+
+    .live-score-pill .pill-num {
+      font-size: 1.4rem;
+      font-weight: 900;
+      min-width: 24px;
+      text-align: center;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .live-score-pill .pill-num.bump {
+      transform: scale(1.4);
+    }
+
+    /* ─── OPTION SLIDE ANIMATIONS ─── */
+    @keyframes slideFromRight {
+      from { opacity: 0; transform: translateX(60px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideFromLeft {
+      from { opacity: 0; transform: translateX(-60px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideFromBottom {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-right { animation: slideFromRight 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+    .slide-left  { animation: slideFromLeft  0.7s cubic-bezier(0.22,1,0.36,1) both; }
+    .slide-up-ex { animation: slideFromBottom 1.5s cubic-bezier(0.22,1,0.36,1) both; }
+
+    /* ─── REVIEW MODAL ─── */
+    .review-modal {
+      max-width: 700px;
+      max-height: 85vh;
+    }
+
+    .review-item {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.3rem 1.5rem;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.35s ease both;
+    }
+
+    .review-item.review-wrong  { border-color: rgba(255,82,82,0.35); }
+    .review-item.review-correct{ border-color: rgba(0,230,118,0.25); }
+    .review-item.review-skipped{ border-color: rgba(255,171,64,0.3); }
+
+    .review-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+
+    .review-badge {
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .badge-wrong   { background: rgba(255,82,82,0.15);  color: var(--red); }
+    .badge-correct { background: rgba(0,230,118,0.12); color: var(--green); }
+    .badge-skipped { background: rgba(255,171,64,0.15); color: var(--amber); }
+
+    .review-q-text {
+      font-size: 0.97rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .review-answers {
+      margin-top: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.88rem;
+    }
+
+    .review-answer-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 9px;
+    }
+
+    .review-answer-row.user-wrong {
+      background: rgba(255,82,82,0.08);
+      color: var(--red);
+    }
+
+    .review-answer-row.correct-ans {
+      background: rgba(0,230,118,0.08);
+      color: var(--green);
+    }
+
+    .review-explanation {
+      margin-top: 0.8rem;
+      background: rgba(0,230,118,0.05);
+      border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 9px;
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+
+    .review-explanation strong { color: var(--green); }
+
     /* about btn in nav */
     .btn-about {
       width: 44px; height: 44px;
@@ -1255,7 +1404,7 @@
       </div>
       <div id="home-content" class="hidden">
         <h2 class="page-title">👋Welcome to the Exams Web<span></span></h2>
-        <p class="page-sub">اختر الامتحان </p>
+        <p class="page-sub">اختر الامتحان</p>
         <div id="quizzes-list"></div>
       </div>
     </div>
@@ -1273,6 +1422,19 @@
       </div>
       <div class="progress-bar-wrap">
         <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+      </div>
+      <!-- LIVE SCORE BAR -->
+      <div class="live-score-bar">
+        <div class="live-score-pill correct-pill">
+          <i class="fas fa-check-circle"></i>
+          <span>صح</span>
+          <span class="pill-num" id="live-correct">0</span>
+        </div>
+        <div class="live-score-pill wrong-pill">
+          <i class="fas fa-times-circle"></i>
+          <span>غلط</span>
+          <span class="pill-num" id="live-wrong">0</span>
+        </div>
       </div>
       <div class="question-card" id="question-card"></div>
       <div class="quiz-actions">
@@ -1313,6 +1475,9 @@
       <div class="results-actions">
         <button class="btn btn-ghost" onclick="backToHome()">
           <i class="fas fa-home"></i> الرئيسية
+        </button>
+        <button class="btn btn-primary" onclick="showReviewModal()" id="review-btn">
+          <i class="fas fa-search"></i> مراجعة الأسئلة
         </button>
       </div>
     </div>
@@ -1558,8 +1723,28 @@
     </div>
   </div>
 
+  <!-- REVIEW MODAL -->
+  <div id="review-modal" class="modal-overlay hidden">
+    <div class="modal review-modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h3 style="margin:0">📋 مراجعة الأسئلة</h3>
+        <button class="btn btn-ghost" onclick="closeModal('review-modal')" style="padding:8px 12px">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <!-- filter tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap">
+        <button class="btn" id="filter-all"    onclick="setReviewFilter('all')"     style="font-size:0.82rem;padding:7px 14px;background:var(--green);color:#000;border-color:transparent">الكل</button>
+        <button class="btn btn-ghost" id="filter-wrong"  onclick="setReviewFilter('wrong')"   style="font-size:0.82rem;padding:7px 14px">❌ الخاطئة</button>
+        <button class="btn btn-ghost" id="filter-correct" onclick="setReviewFilter('correct')" style="font-size:0.82rem;padding:7px 14px">✅ الصحيحة</button>
+        <button class="btn btn-ghost" id="filter-skipped" onclick="setReviewFilter('skipped')" style="font-size:0.82rem;padding:7px 14px">⏭ المتخطاة</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+  </div>
+
   <footer>
-    <div style="font-size:0.9rem;font-weight:700">⭐BY : STAR BOY </div>
+    <div style="font-size:0.9rem;font-weight:700">⭐ BY : STAR BOY</div>
     <div style="font-size:0.8rem;margin-top:6px">الفرقة الثالثة — قسم نظم ومعلومات</div>
   </footer>
 
@@ -1721,6 +1906,7 @@
       showPage('quiz-page');
       document.getElementById('quiz-title').textContent = currentQuiz.title;
       showCurrentQuestion();
+      updateLiveScore();
       if (selectedIndex !== null) {
         setTimeout(() => {
           const el = document.getElementById(`opt-${selectedIndex}`);
@@ -1740,9 +1926,35 @@
       currentQuestionIndex = 0;
       userAnswers = {};
       selectedIndex = null;
+      updateLiveScore();
       showPage('quiz-page');
       document.getElementById('quiz-title').textContent = currentQuiz.title;
       showCurrentQuestion();
+    }
+
+    function updateLiveScore() {
+      let correct = 0, wrong = 0;
+      currentQuiz.questions.forEach((q, i) => {
+        const ans = userAnswers[i];
+        if (ans === null || ans === undefined) return;
+        if (q.type === 'essay') {
+          if (q.keywords && q.keywords.some(kw => ans.toLowerCase().includes(kw.toLowerCase()))) correct++;
+          else wrong++;
+        } else {
+          if (ans === q.correct) correct++; else wrong++;
+        }
+      });
+      const cEl = document.getElementById('live-correct');
+      const wEl = document.getElementById('live-wrong');
+      if (!cEl || !wEl) return;
+
+      const prevC = parseInt(cEl.textContent) || 0;
+      const prevW = parseInt(wEl.textContent) || 0;
+      cEl.textContent = correct;
+      wEl.textContent = wrong;
+
+      if (correct > prevC) { cEl.classList.add('bump'); setTimeout(() => cEl.classList.remove('bump'), 400); }
+      if (wrong  > prevW) { wEl.classList.add('bump'); setTimeout(() => wEl.classList.remove('bump'), 400); }
     }
 
     function updateProgressBar() {
@@ -1769,10 +1981,13 @@
       `;
 
       if (q.type === 'mcq') {
+        // A,C من اليمين — B,D من اليسار
+        const dirs = ['slide-right','slide-left','slide-right','slide-left'];
+        const delays = [0.1, 0.25, 0.4, 0.55];
         html += `<div class="options-grid">`;
         q.options.forEach((opt, i) => {
           html += `
-            <div class="option" id="opt-${i}" onclick="selectOption(${i})">
+            <div class="option ${dirs[i]}" id="opt-${i}" onclick="selectOption(${i})" style="animation-delay:${delays[i]}s">
               <span class="option-letter">${String.fromCharCode(65 + i)}</span>
               <span>${opt}</span>
             </div>`;
@@ -1781,11 +1996,11 @@
       } else if (q.type === 'tf') {
         html += `
           <div class="tf-grid">
-            <div class="tf-option" id="opt-0" onclick="selectOption(0)">✅ صح</div>
-            <div class="tf-option" id="opt-1" onclick="selectOption(1)">❌ خطأ</div>
+            <div class="tf-option slide-right" id="opt-0" onclick="selectOption(0)" style="animation-delay:0.05s">✅ صح</div>
+            <div class="tf-option slide-left"  id="opt-1" onclick="selectOption(1)" style="animation-delay:0.12s">❌ خطأ</div>
           </div>`;
       } else {
-        html += `<textarea id="essay-input" rows="6" placeholder="اكتب إجابتك هنا..."></textarea>`;
+        html += `<textarea id="essay-input" rows="6" placeholder="اكتب إجابتك هنا..." class="slide-right"></textarea>`;
       }
 
       document.getElementById('question-card').innerHTML = html;
@@ -1821,16 +2036,22 @@
       const container = document.getElementById('question-card');
       const userChoice = userAnswers[currentQuestionIndex];
       const isCorrect = (q.type === 'mcq' || q.type === 'tf') ? userChoice === q.correct : false;
+
+      // update live score after answer
+      updateLiveScore();
+
       let html = `<div class="question-text">${q.question}</div>`;
 
       if (q.type === 'mcq') {
+        const dirs = ['slide-right','slide-left','slide-right','slide-left'];
+        const delays = [0.03, 0.08, 0.13, 0.18];
         html += `<div class="options-grid">`;
         q.options.forEach((opt, i) => {
           let cls = '';
           if (i === q.correct) cls = 'correct';
           else if (i === userChoice) cls = 'wrong';
           html += `
-            <div class="option ${cls}">
+            <div class="option ${cls} ${dirs[i]}" style="animation-delay:${delays[i]}s">
               <span class="option-letter">${String.fromCharCode(65 + i)}</span>
               <span>${opt}</span>
               ${i === q.correct ? '<i class="fas fa-check" style="margin-right:auto;color:var(--green)"></i>' : ''}
@@ -1839,20 +2060,19 @@
         });
         html += `</div>`;
         if (!isCorrect && q.explanation) {
-          html += `<div class="explanation"><strong>💡 الإجابة الصحيحة:</strong> ${q.explanation}</div>`;
+          html += `<div class="explanation slide-up-ex" style="animation-delay:0.25s"><strong>💡 الإجابة الصحيحة:</strong> ${q.explanation}</div>`;
         }
       } else if (q.type === 'tf') {
         html += `<div class="tf-grid">`;
         ['✅ صح', '❌ خطأ'].forEach((label, i) => {
-          let cls = '';
-          if (i === q.correct) cls = 'correct';
-          else if (i === userChoice) cls = 'wrong';
-          html += `<div class="tf-option ${cls}">${label}</div>`;
+          let cls = i === q.correct ? 'correct' : i === userChoice ? 'wrong' : '';
+          const dir = i === 0 ? 'slide-right' : 'slide-left';
+          html += `<div class="tf-option ${cls} ${dir}" style="animation-delay:${i*0.08}s">${label}</div>`;
         });
         html += `</div>`;
         if (!isCorrect) {
           const correctLabel = q.correct === 0 ? 'صح' : 'خطأ';
-          html += `<div class="explanation">
+          html += `<div class="explanation slide-up-ex" style="animation-delay:0.2s">
             <strong>💡 الإجابة الصحيحة هي: ${correctLabel}</strong>
             ${q.explanation ? `<br><br>${q.explanation}` : ''}
           </div>`;
@@ -1861,20 +2081,20 @@
         const answer = userAnswers[currentQuestionIndex];
         const essayCorrect = q.keywords && q.keywords.some(kw => answer.toLowerCase().includes(kw.toLowerCase()));
         html += `
-          <div style="background:var(--surface2);border-radius:12px;padding:1.2rem;margin-bottom:1rem;border:1px solid var(--border)">
+          <div class="slide-right" style="background:var(--surface2);border-radius:12px;padding:1.2rem;margin-bottom:1rem;border:1px solid var(--border)">
             <p style="color:var(--text-dim);margin-bottom:6px;font-size:0.85rem;font-weight:700">إجابتك:</p>
             <p>${answer}</p>
           </div>
-          <div style="font-size:1.1rem;font-weight:800;color:${essayCorrect ? 'var(--green)' : 'var(--red)'}">
+          <div class="slide-left" style="font-size:1.1rem;font-weight:800;color:${essayCorrect ? 'var(--green)' : 'var(--red)'}">
             ${essayCorrect ? '✅ إجابة صحيحة' : '❌ إجابة خاطئة'}
           </div>`;
         if (!essayCorrect && q.explanation) {
-          html += `<div class="explanation"><strong>💡 الإجابة الصحيحة:</strong> ${q.explanation}</div>`;
+          html += `<div class="explanation slide-up-ex" style="animation-delay:0.2s"><strong>💡 الإجابة الصحيحة:</strong> ${q.explanation}</div>`;
         }
       }
 
       const isLast = currentQuestionIndex === currentQuiz.questions.length - 1;
-      html += `<div style="text-align:center;margin-top:1.8rem">
+      html += `<div class="slide-up-ex" style="text-align:center;margin-top:1.8rem;animation-delay:0.35s">
         <button class="btn btn-primary" onclick="nextQuestion()" style="padding:13px 44px;font-size:1rem">
           ${isLast ? 'عرض النتائج <i class="fas fa-chart-bar"></i>' : 'السؤال التالي <i class="fas fa-arrow-left"></i>'}
         </button>
@@ -1937,6 +2157,99 @@
     }
 
     function backToHome() { showHome(); }
+
+    // ====================== REVIEW MODAL ======================
+    let reviewFilter = 'all';
+
+    function showReviewModal() {
+      reviewFilter = 'all';
+      renderReviewList();
+      document.getElementById('review-modal').classList.remove('hidden');
+    }
+
+    function setReviewFilter(f) {
+      reviewFilter = f;
+      // update tab styles
+      ['all','wrong','correct','skipped'].forEach(tab => {
+        const btn = document.getElementById(`filter-${tab}`);
+        if (!btn) return;
+        if (tab === f) {
+          btn.style.background = 'var(--green)';
+          btn.style.color = '#000';
+          btn.style.borderColor = 'transparent';
+          btn.classList.remove('btn-ghost');
+        } else {
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.classList.add('btn-ghost');
+        }
+      });
+      renderReviewList();
+    }
+
+    function getQuestionResult(q, i) {
+      const ans = userAnswers[i];
+      if (ans === null || ans === undefined) return 'skipped';
+      if (q.type === 'essay') {
+        return q.keywords && q.keywords.some(kw => ans.toLowerCase().includes(kw.toLowerCase())) ? 'correct' : 'wrong';
+      }
+      return ans === q.correct ? 'correct' : 'wrong';
+    }
+
+    function renderReviewList() {
+      const container = document.getElementById('review-list');
+      const questions = currentQuiz.questions;
+
+      const items = questions.map((q, i) => ({ q, i, result: getQuestionResult(q, i) }))
+        .filter(({ result }) => reviewFilter === 'all' || result === reviewFilter);
+
+      if (items.length === 0) {
+        container.innerHTML = `<div class="empty"><i class="fas fa-check-double"></i><p>لا توجد أسئلة في هذه الفئة</p></div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(({ q, i, result }, idx) => {
+        const ans = userAnswers[i];
+        const badgeClass = result === 'correct' ? 'badge-correct' : result === 'wrong' ? 'badge-wrong' : 'badge-skipped';
+        const badgeText = result === 'correct' ? '✅ صح' : result === 'wrong' ? '❌ غلط' : '⏭ متخطي';
+        const cardClass = `review-${result}`;
+
+        let answersHtml = '';
+        if (q.type === 'mcq') {
+          if (result === 'wrong' && ans !== null && ans !== undefined) {
+            answersHtml += `<div class="review-answer-row user-wrong"><i class="fas fa-times-circle"></i> إجابتك: ${q.options[ans]}</div>`;
+          }
+          answersHtml += `<div class="review-answer-row correct-ans"><i class="fas fa-check-circle"></i> الصح: ${q.options[q.correct]}</div>`;
+        } else if (q.type === 'tf') {
+          const labels = ['صح', 'خطأ'];
+          if (result === 'wrong' && ans !== null && ans !== undefined) {
+            answersHtml += `<div class="review-answer-row user-wrong"><i class="fas fa-times-circle"></i> إجابتك: ${labels[ans]}</div>`;
+          }
+          answersHtml += `<div class="review-answer-row correct-ans"><i class="fas fa-check-circle"></i> الصح: ${labels[q.correct]}</div>`;
+        } else if (q.type === 'essay' && ans) {
+          answersHtml += `<div class="review-answer-row" style="background:var(--surface3)"><i class="fas fa-pen"></i> إجابتك: ${ans}</div>`;
+          if (result === 'wrong' && q.keywords?.length) {
+            answersHtml += `<div class="review-answer-row correct-ans"><i class="fas fa-key"></i> كلمات مفتاحية: ${q.keywords.join('، ')}</div>`;
+          }
+        }
+
+        const explanationHtml = q.explanation
+          ? `<div class="review-explanation"><strong>💡 الشرح:</strong> ${q.explanation}</div>`
+          : '';
+
+        return `
+          <div class="review-item ${cardClass}" style="animation-delay:${idx * 0.04}s">
+            <div class="review-item-header">
+              <span class="review-badge ${badgeClass}">${badgeText}</span>
+              <span style="font-size:0.8rem;color:var(--text-muted);font-weight:700">سؤال ${i + 1}</span>
+            </div>
+            <div class="review-q-text">${q.question}</div>
+            <div class="review-answers">${answersHtml}</div>
+            ${explanationHtml}
+          </div>`;
+      }).join('');
+    }
 
     // ====================== PASSWORD MODAL ======================
     function promptAdmin() {
@@ -2390,7 +2703,7 @@
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', function(e) {
         if (e.target === this) {
-          const modals = ['pwd-modal', 'quiz-modal', 'question-modal', 'about-modal'];
+          const modals = ['pwd-modal', 'quiz-modal', 'question-modal', 'about-modal', 'review-modal'];
           modals.forEach(m => {
             if (this.id === m) closeModal(m);
           });
