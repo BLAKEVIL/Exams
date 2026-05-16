@@ -2127,7 +2127,7 @@ ESSAY
         });
         html += `</div>`;
         if (!isCorrect && q.explanation) {
-          html += `<div class="explanation slide-up-ex" style="animation-delay:0.25s"><strong>💡توضيح الإجابة:</strong> ${q.explanation}</div>`;
+          html += `<div class="explanation slide-up-ex" style="animation-delay:0.25s"><strong>💡الاجابة الصحيحة هي:</strong> ${q.explanation}</div>`;
         }
       } else if (q.type === 'tf') {
         html += `<div class="tf-grid">`;
@@ -2140,7 +2140,7 @@ ESSAY
         if (!isCorrect) {
           const correctLabel = q.correct === 0 ? 'صح' : 'خطأ';
           html += `<div class="explanation slide-up-ex" style="animation-delay:0.2s">
-            <strong>💡 توضيح الاجابة: ${correctLabel}</strong>
+            <strong>💡 الاجابة الصحيحة هي: ${correctLabel}</strong>
             ${q.explanation ? `<br><br>${q.explanation}` : ''}
           </div>`;
         }
